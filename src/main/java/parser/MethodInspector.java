@@ -9,14 +9,11 @@ import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.comments.JavadocComment;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * This class contains static operations to get method nodes from
@@ -28,6 +25,8 @@ public class MethodInspector {
     /**
      * Code that extracts method AST nodes from a Java source file via a Visitor pattern and stores
      * them as {@code MethodNode}s.
+     *
+     * @author stulova
      */
     private static class MethodDataCollector extends VoidVisitorAdapter<List<MethodNode>> {
 
@@ -55,7 +54,7 @@ public class MethodInspector {
                         md.getParameters(),
                         md.getType(),
                         md.getThrownExceptions(),
-                        new StructuredComment(md.getJavadocComment()),
+                        new StructuredComment(md.getJavadocComment(), Optional.empty()),
                         LOCbegin,
                         LOCend));
             }
@@ -97,9 +96,17 @@ public class MethodInspector {
      * @return Returns a {@code MethodNode} representation of the method parsed
      */
     public static MethodNode getSingleMethodNodeFromFile(String path) {
+        String fileContents = "";
         try {
-            Path fpath = Paths.get(path);
-            String fileContents = Files.readString(fpath); // IOException
+
+            try (InputStream inputStream = MethodInspector.class.getClassLoader().getResourceAsStream(path);
+                 BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+                fileContents = reader.lines()
+                        .collect(Collectors.joining(System.lineSeparator()));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
 
             // FIXME keep this, not the parseMethod one
             BodyDeclaration<?> md = StaticJavaParser.parseBodyDeclaration(fileContents);
@@ -115,7 +122,7 @@ public class MethodInspector {
                         //FIXME if Javadoc is empty, here we throw exception.
                         //FIXME make the parameter of StructuredComment Optional and
                         //FIXME manage empty nodes there
-                        new StructuredComment(((MethodDeclaration) md).getJavadocComment()),
+                        new StructuredComment(((MethodDeclaration) md).getJavadocComment(), Optional.empty()),
 
                         0,
                         0);
@@ -130,7 +137,7 @@ public class MethodInspector {
                         //FIXME if Javadoc is empty, here we throw exception.
                         //FIXME make the parameter of StructuredComment Optional and
                         //FIXME manage empty nodes there
-                        new StructuredComment(((ConstructorDeclaration) md).getJavadocComment()),
+                        new StructuredComment(((ConstructorDeclaration) md).getJavadocComment(), Optional.empty()),
 
                         0,
                         0);
@@ -143,8 +150,6 @@ public class MethodInspector {
             System.err.println("[javaparser]: could not parse file " + path);
             System.err.print(parsingException.getMessage());
 
-        } catch (IOException ioException) {
-            System.err.println(ioException.getMessage());
         }
 
         return null;

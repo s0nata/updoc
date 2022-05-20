@@ -1,5 +1,4 @@
 arg:argument
-char:character
 clazz:class
 conf:configuration
 config:configuration

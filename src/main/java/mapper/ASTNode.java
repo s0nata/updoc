@@ -2,6 +2,7 @@ package mapper;
 
 import parser.StructuredSignature;
 
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
 
 /**
@@ -71,6 +72,30 @@ public class ASTNode {
 
         for (Identifier id : this.identifiers) {
             bow.addAll(id.split());
+        }
+
+        return bow;
+
+    }
+
+    public WordBag toBagOfWords(CommentSentence.CommentPart part) {
+
+        WordBag bow = new WordBag();
+
+        for (Identifier id : this.identifiers) {
+            ArrayList<String> IDs = id.split();
+            bow.addAll(IDs);
+
+            if (part != null &&
+                    part.equals(CommentSentence.CommentPart.RETURN)) {
+                if (id.getKindOfID().equals(Identifier.KindOfID.TYPE_NAME)) {
+                    bow.addAll(IDs);
+                    bow.addAll(IDs);
+                }
+//            else if(id.getKindOfID().equals(Identifier.KindOfID.METHOD_NAME)) {
+//              bow.addAll(IDs);
+//            }
+            }
         }
 
         return bow;

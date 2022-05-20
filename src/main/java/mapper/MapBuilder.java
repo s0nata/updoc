@@ -1,7 +1,6 @@
 package mapper;
 
 import parser.MethodNode;
-import semantic.SemanticMatcher;
 
 import java.text.DecimalFormat;
 import java.util.*;
@@ -31,7 +30,6 @@ public class MapBuilder {
      */
     private final double similarityThreshold;
 
-    private static final double SEMANTIC_THRESHOLD = -1;
     /**
      * The mapping between a node ID and related sentences (with similarities)
      */
@@ -39,10 +37,29 @@ public class MapBuilder {
     // TODO a new class (e.g. RelatedSentence) could be an alternative
     private final Hashtable<Integer, LinkedHashMap<Integer, Double>> mapping;
 
-    private static final String DEFAULT_SIM_FORMAT = "0.000";
-    private final String simFormat;
 
-    public MapBuilder(MethodNode mn, double bowSimilarity, boolean semantic, String format) {
+    /**
+     * Special for Replicomment
+     *
+     * @param mn
+     * @param bowSimilarity
+     * @param replicomment
+     */
+    public MapBuilder(MethodNode mn, double bowSimilarity, boolean replicomment, CommentSentence.CommentPart part) {
+        this.similarityThreshold = bowSimilarity;
+
+        this.methodComment = new MethodComment(mn.getDocComment(), replicomment);
+
+        this.methodBody = new MethodBody(mn);
+
+        // As soon as a MapBuilder is instantiated,
+        // the mapping between code and comment is created and stored
+        this.mapping = mapCommentToCode(part);
+
+    }
+
+
+    public MapBuilder(MethodNode mn, double bowSimilarity) {
         this.similarityThreshold = bowSimilarity;
 
         this.methodComment = new MethodComment(mn.getDocComment());
@@ -51,17 +68,7 @@ public class MapBuilder {
 
         // As soon as a MapBuilder is instantiated,
         // the mapping between code and comment is created and stored
-        if (!semantic) {
-            this.mapping = mapCommentToCode();
-        } else {
-            this.mapping = mapCommentToCodeSemantic();
-        }
-
-        if (format.isEmpty()) {
-            this.simFormat = DEFAULT_SIM_FORMAT;
-        } else {
-            this.simFormat = format;
-        }
+        this.mapping = mapCommentToCode();
 
     }
 
@@ -94,7 +101,9 @@ public class MapBuilder {
                 if (cosineSim > this.similarityThreshold) {
                     relatedSentences.put(sentence.getId(), cosineSim);
                 }
+
             }
+
             mapping.put(methodNode.getNodeId(), relatedSentences);
         }
 
@@ -108,13 +117,13 @@ public class MapBuilder {
      *
      * @return Returns the mapping
      */
-    private Hashtable<Integer, LinkedHashMap<Integer, Double>> mapCommentToCodeSemantic() {
+    private Hashtable<Integer, LinkedHashMap<Integer, Double>> mapCommentToCode(CommentSentence.CommentPart part) {
 
         // The final code-doc mapping to be returned
         Hashtable<Integer, LinkedHashMap<Integer, Double>> mapping = new Hashtable<>();
 
         for (ASTNode methodNode : methodBody.getBodyNodes()) {
-            WordBag methodBoW = methodNode.toBagOfWords();
+            WordBag methodBoW = methodNode.toBagOfWords(part);
 
             // Related sentences, with their ID and similarity
             LinkedHashMap<Integer, Double> relatedSentences = new LinkedHashMap<>();
@@ -122,19 +131,21 @@ public class MapBuilder {
             for (CommentSentence sentence : methodComment.getCommentSentences()) {
                 WordBag sentenceBoW = sentence.toBagOfWords();
 
-                double wordMovDistance = SemanticMatcher.wmdMatch(sentenceBoW, methodBoW);
-                double normalizedWMD = wordMovDistance / 10;
-                double semanticSim = 1 - normalizedWMD;
-                if (semanticSim > SEMANTIC_THRESHOLD) {
-                    relatedSentences.put(sentence.getId(), semanticSim);
+                // FIXME this computation is repeated in toString() method.
+                // FIXME Save instead this computation result.
+                // FIXME currently this method only saves the related sentence ID
+                double cosineSim = methodBoW.cosineSim(sentenceBoW);
+                if (cosineSim > this.similarityThreshold) {
+                    relatedSentences.put(sentence.getId(), cosineSim);
                 }
+
             }
+
             mapping.put(methodNode.getNodeId(), relatedSentences);
         }
 
         return mapping;
     }
-
 
     public Hashtable<Integer, LinkedHashMap<Integer, Double>> getMapping() {
         return this.mapping;
@@ -184,7 +195,7 @@ public class MapBuilder {
     @Override
     public String toString() {
 
-        DecimalFormat format = new DecimalFormat(simFormat);
+        DecimalFormat format = new DecimalFormat("0.000");
 
         StringBuilder mappingAsString = new StringBuilder();
 
@@ -193,9 +204,6 @@ public class MapBuilder {
 
             // FIXME For each nodeID we iterate over method body's nodes: why?
             for (ASTNode currentNode : this.methodBody.getBodyNodes()) {
-
-                mappingAsString.append("For signature:").append("\n");
-                mappingAsString.append(this.methodBody.getOriginalSignature()).append("\n");
 
                 mappingAsString
                         .append("\tAST nodes:\n" + "\tid:")
@@ -222,7 +230,7 @@ public class MapBuilder {
                                 .append(format.format(cosineSim))
                                 .append("\t")
                                 .append(relatedSentence)
-                                .append("\n\t" + relatedSentence.toBagOfWords() + "\n");
+                                .append(/*"\n\t" + relatedSentence.toBagOfWords()+ */ "\n");
                     }
                 } else {
                     mappingAsString.append("\t<None>");

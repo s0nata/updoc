@@ -10,9 +10,9 @@ import static org.junit.Assert.assertEquals;
 
 public class MapBuilderTest {
 
-    static final String TEST_FPATH = "src/test/resources/paper-example/";
+    static final String TEST_FPATH = "mapping/";
 
-    static final String TEST_FILE = "AdaptiveIsomorphismInspectorFactory_c.java";
+    static final String TEST_FILE = "AdaptiveIsomorphismInspectorFactory.java";
 
     static final double SIMILARITY_THRESHOLD = 0.2;
 
@@ -20,7 +20,7 @@ public class MapBuilderTest {
 
         MethodNode mn = MethodInspector.getSingleMethodNodeFromFile(TEST_FPATH + TEST_FILE);
 
-        return new MapBuilder(mn, SIMILARITY_THRESHOLD, false, "");
+        return new MapBuilder(mn, SIMILARITY_THRESHOLD);
     }
 
     @Test

@@ -1,6 +1,7 @@
 package mapper;
 
-import org.tartarus.snowball.ext.EnglishStemmer;
+import edu.stanford.nlp.simple.Sentence;
+import org.tartarus.snowball.ext.PorterStemmer;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -22,7 +23,7 @@ public class Identifier {
         VAR_NAME, METHOD_NAME, CLASS_NAME, TYPE_NAME
     }
 
-  private String fullName;
+  private final String fullName;
 
     private final KindOfID kindOfID;
 
@@ -36,6 +37,14 @@ public class Identifier {
 
         splitName = this.split();
 
+    }
+
+    public String getFullName() {
+        return fullName;
+    }
+
+    public KindOfID getKindOfID() {
+        return kindOfID;
     }
 
     /**
@@ -61,17 +70,16 @@ public class Identifier {
         // match positions between letters of different case (camelCase)
         String patternLowerToUpper = "(?<!(^|[A-Z]))(?=[A-Z])";
         // match on Java-legal special characters and remove them
-
-        String patternOmitSpecial = "[#_$\\-/'\"<>?!()]";
-        // match on numbers to solve them
-        String patternNumbers = "((?<=[0-9]+)|(?=[0-9]+))";
-        if (fullName.matches(".*[0-9]+")) {
-            fullName = manageCardinalNumber(fullName, patternNumbers);
-        }
+        // FIXME I am adding the dash too for now
+        String patternOmitSpecial = "[#_$\\-]";
+        // match on numbers and remove them
+        // FIXME is this the best choice, though? Parameters may be distinguished from one another
+        // FIXME by numbers (e.g., param1 and param2): maybe we need to be aware of that distinction
+        String patternOmitNumber = "[0-9]+";
 
         // identifier splitting, order matters: matching is greedy
         // empty words appear when a character is removed (special one or number)
-        String pattern = patternOmitSpecial + "|" + patternLowerToUpper;
+        String pattern = patternOmitSpecial + "|" + patternOmitNumber + "|" + patternLowerToUpper;
 
         String stopwordsContent = "";
         String abbrevContent = "";
@@ -93,7 +101,13 @@ public class Identifier {
         }
         // Check whether word belongs to stopwords list: if so it won't be part of BoW
         List<String> stopwords = Arrays.asList(stopwordsContent.split("\n"));
-        String[] abbrevs = abbrevContent.split("\n");
+        List<String> abbrevs = Arrays.asList(abbrevContent.split("\n"));
+        extractAllLemmas(this.fullName, nameParts, pattern, stopwords, abbrevs);
+
+        return nameParts;
+    }
+
+    private void extractAllLemmas(String fullName, ArrayList<String> nameParts, String pattern, List<String> stopwords, List<String> abbrevs) {
         for (String word : fullName.split(pattern)) {
             if (!word.isEmpty() && !stopwords.contains(word)) {
                 // Word is not part of stopwords. Is it an abbreviation that must be expanded?
@@ -103,38 +117,20 @@ public class Identifier {
                     String[] pair = abbr.split(":");
                     if (word.equals(pair[0])) {
                         word = pair[1];
+                        if (word.contains("-")) {
+                            extractAllLemmas(word, nameParts, pattern, stopwords, abbrevs);
+                        }
                         break;
                     }
                 }
-
-                // Here we get lemmas and stems.
-                // TODO Ari: Note that stemming or lemmatizating words
-                // TODO heavily affects cosine sim (obviously), while it is basically irrelevant for
-                // TODO semantic measures like WMD.
                 word = getStemmedLemma(word);
-
                 // TODO check if lowercase is necessary, stemmer should already do this
-                nameParts.add(word.toLowerCase());
+                word = word.trim();
+                if (!word.isEmpty()) {
+                    nameParts.add(word.toLowerCase());
+                }
             }
         }
-
-        return nameParts;
-    }
-
-    private String manageCardinalNumber(String fullName, String patternNumbers) {
-        for (String word : fullName.split(patternNumbers)) {
-            switch (word) {
-                case "1":
-                    fullName = fullName.replace("1", "First");
-                    break;
-                case "2":
-                    fullName = fullName.replace("2", "Second");
-                    break;
-            }
-        }
-
-        return fullName;
-
     }
 
     /**
@@ -144,17 +140,10 @@ public class Identifier {
      * @return the result of lemmatization+stemmating
      */
     private String getStemmedLemma(String word) {
-//    String lemma = new Sentence(word).lemma(0);
+        String lemma = new Sentence(word).lemma(0);
 
-
-        // TODO Ari -- this used to be PorterStemmer, but it seems to have some bugs:
-        // TODO For example, it would stem "one" as "on".
-        // TODO For a reference to how a word should be stem, you can try at:
-        // TODO https://text-processing.com/demo/stem/
-        // TODO
-        // TODO For now I switch to EnglishStemmer because it does not present the same bug.
-        EnglishStemmer stemmer = new EnglishStemmer();
-        stemmer.setCurrent(word);
+        PorterStemmer stemmer = new PorterStemmer();
+        stemmer.setCurrent(lemma);
         stemmer.stem();
         word = stemmer.getCurrent();
         return word;
@@ -180,7 +169,7 @@ public class Identifier {
 
         // can either return the original identifier name or its split into constituents, doing the
         // latter
-        // FIXME: remove extra spaces before and after the splits --NS
+        // FIXME: remove extra spaces before and after the splits
         String identfierString = " ";
 
         for (String constituent : this.splitName) {

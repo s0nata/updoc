@@ -19,6 +19,17 @@ public class MethodComment {
         this.commentSentences.addAll(structuredComment.getTaggedSentences());
     }
 
+    /**
+     * Special for Replicomment
+     *
+     * @param structuredComment
+     * @param repliComment
+     */
+    public MethodComment(StructuredComment structuredComment, boolean repliComment) {
+        this.commentSentences = new ArrayList<>();
+        this.commentSentences.addAll(structuredComment.getDescriptiveSentences());
+        this.commentSentences.addAll(structuredComment.getTaggedSentencesRepliComment());
+    }
 
     public ArrayList<CommentSentence> getCommentSentences() {
         return commentSentences;

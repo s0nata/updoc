@@ -1,0 +1,20 @@
+    /**
+     * Returns a direct iterator over the keys.
+     */
+    public Iterator<KType> keysIt() {
+        final Iterator<ObjectCursor<KType>> iterator = map.keys().iterator();
+        return new Iterator<KType>() {
+            @Override
+            public boolean hasNext() { return iterator.hasNext(); }
+
+            @Override
+            public KType next() {
+                return iterator.next().value;
+            }
+
+            @Override
+            public void remove() {
+                throw new UnsupportedOperationException();
+            }
+        };
+    }

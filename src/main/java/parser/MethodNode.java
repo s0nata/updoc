@@ -20,9 +20,20 @@ public class MethodNode {
 
     private final StructuredSignature methodSignature;
 
-    private final Range<Integer> LOC;
+    private Range<Integer> LOC;
 
     private final StructuredComment docComment;
+
+    /**
+     * Special constructor assuming a StructuredSignature was already built
+     * (useful for RepliComment csv output) Also do not care about LOCs
+     */
+    public MethodNode(StructuredSignature signature, StructuredComment comment) {
+        this.methodSignature = signature;
+        this.simpleMethodName = signature.getMethodName().toString();
+        this.docComment = comment;
+    }
+
 
     public MethodNode(String mname, NodeList<Parameter> params,
                       Type returnType, NodeList<ReferenceType> thrownExceptions,

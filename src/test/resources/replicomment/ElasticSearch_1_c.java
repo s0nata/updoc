@@ -1,0 +1,22 @@
+    /**
+     * Returns a direct iterator over the keys.
+     */
+    public Iterator<VType> valuesIt() {
+        final Iterator<ObjectCursor<VType>> iterator = map.values().iterator();
+        return new Iterator<VType>() {
+            @Override
+            public boolean hasNext() {
+                return iterator.hasNext();
+            }
+
+            @Override
+            public VType next() {
+                return iterator.next().value;
+            }
+
+            @Override
+            public void remove() {
+                throw new UnsupportedOperationException();
+            }
+        };
+    }

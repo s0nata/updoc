@@ -117,6 +117,7 @@ public class WordBag {
 
         CosineSimilarity dist = new CosineSimilarity();
 
+        // TODO could be written more elegantly with lambdas
         Map<CharSequence, Integer> leftVector = new HashMap<>();
         for (String tLemma : this.lemmas) {
             leftVector.put(tLemma, this.lemmas.getCount(tLemma));
@@ -130,17 +131,6 @@ public class WordBag {
         return dist.cosineSimilarity(leftVector, rightVector);
     }
 
-    public String asSentence() {
-        StringBuilder sentence = new StringBuilder();
-        for (String lemma : this.lemmas.uniqueSet()) {
-            for (int i = 0; i < this.lemmas.getCount(lemma); i++) {
-                sentence.append(lemma);
-                sentence.append(" ");
-            }
-        }
-
-        return sentence.toString();
-    }
 
     /**
      * Returns the underlying HashBag<> as is.

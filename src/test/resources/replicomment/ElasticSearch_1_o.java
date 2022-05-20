@@ -1,0 +1,22 @@
+    /**
+     * Returns a direct iterator over the keys.
+     */
+    public Iterator<Integer> keysIt() {
+        final Iterator<IntCursor> iterator = map.keys().iterator();
+        return new Iterator<Integer>() {
+            @Override
+            public boolean hasNext() {
+                return iterator.hasNext();
+            }
+
+            @Override
+            public Integer next() {
+                return iterator.next().value;
+            }
+
+            @Override
+            public void remove() {
+                throw new UnsupportedOperationException();
+            }
+        };
+    }

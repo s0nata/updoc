@@ -75,16 +75,17 @@ public class CommentSentence {
         return this.part;
     }
 
-
-    /**
-     * Note that CamelCase IDs get splitted in comment just as they are for AST nodes.
-     */
     public WordBag toBagOfWords() {
 
         WordBag sentenceBoW = new WordBag();
 
         if (this.hasSentenceStructure) {
+
             for (String word : this.sentenceStructure.words()) {
+                // FIXME why would you want lemmas here?
+                // FIXME id.Split() later will already try to get a lemma,
+                // FIXME this here will mess up some identifiers, e.g. camelCase ones
+
                 // treat every lemma as an identifier
                 // TODO: this above is hacky
                 Identifier id = new Identifier(word, Identifier.KindOfID.VAR_NAME);
@@ -92,10 +93,8 @@ public class CommentSentence {
                     sentenceBoW.add(lemmaFromId.toLowerCase());
                 }
             }
-            removePunctuation(sentenceBoW);
 
-            // FIXME removing stopwords should be made by id.split() already,
-            // FIXME check whether this call is redundant
+            removePunctuation(sentenceBoW);
             removeStopWords(sentenceBoW);
         }
 
@@ -105,11 +104,7 @@ public class CommentSentence {
 
     private void removePunctuation(WordBag stringBag) {
 
-        // FIXME when we feed a comment sentence to the Stanford Parser's Sentence
-        // FIXME representation, some symbols get converted into something else:
-        // FIXME it is the case of opening/closing parenthes, that become "lrb" and "rrb".
-        // FIXME Check whether other symbols are involved, and, possibly, address them earlier
-        List<String> punctuationSymbols = Arrays.asList(".", ",", "lrb", "rrb");
+        List<String> punctuationSymbols = Arrays.asList(".", ",");
 
         for (String symbol : punctuationSymbols) {
             if (stringBag.contains(symbol)) {

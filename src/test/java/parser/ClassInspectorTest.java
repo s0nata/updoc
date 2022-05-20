@@ -26,8 +26,7 @@ public class ClassInspectorTest {
         expected.add("AdaptiveIsomorphismInspectorFactory has LOC range [63..268]");
         expected.add("BhandariKDisjointShortestPaths has LOC range [53..302]");
         expected.add("DefaultDirectedWeightedEdgeTest has LOC range [52..104]");
-        expected
-                .add("MyGraphListener has LOC range [391..422]JGraphModelAdapter has LOC range [87..423]");
+        expected.add("MyGraphListener has LOC range [391..422]JGraphModelAdapter has LOC range [87..423]");
 
         for (int i = 0; i < expected.size(); i++) {
             ArrayList<ClassNode> testClasses = ClassInspector

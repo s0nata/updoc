@@ -7,9 +7,9 @@ import parser.MethodNode;
 import static org.junit.Assert.assertEquals;
 
 public class MehtodBodyTest {
-    static final String TEST_FPATH = "src/test/resources/paper-example/";
+    static final String TEST_FPATH = "mapping/";
 
-    static final String TEST_FILE = "AdaptiveIsomorphismInspectorFactory_c.java";
+    static final String TEST_FILE = "AdaptiveIsomorphismInspectorFactory.java";
 
     @Test
     public void shouldGetMethodSignatureNode() {

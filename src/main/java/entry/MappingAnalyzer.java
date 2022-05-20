@@ -25,8 +25,9 @@ public class MappingAnalyzer {
 
         try {
 
+            MethodInspector methodInspector = new MethodInspector();
             MethodNode mn = MethodInspector.getSingleMethodNodeFromFile(path + fileName);
-            MapBuilder cm = new MapBuilder(mn, Double.parseDouble(bowSimilarityThreshold), false, "");
+            MapBuilder cm = new MapBuilder(mn, Double.parseDouble(bowSimilarityThreshold));
 
             return cm;
 
@@ -36,6 +37,7 @@ public class MappingAnalyzer {
 
             System.err.println(errorMsg);
 
+            //return errorMsg;
             return null;
         }
 

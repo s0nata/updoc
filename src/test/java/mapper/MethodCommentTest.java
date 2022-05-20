@@ -9,14 +9,15 @@ import static org.junit.Assert.assertEquals;
 
 public class MethodCommentTest {
 
-    static final String TEST_FPATH = "src/test/resources/paper-example/";
+    static final String TEST_FPATH = "mapping/";
 
-    static final String TEST_FILE = "AdaptiveIsomorphismInspectorFactory_c.java";
+    static final String TEST_FILE = "AdaptiveIsomorphismInspectorFactory.java";
 
     @Test
     public void shouldGetDescriptiveSentences() {
 
         MethodNode mn = MethodInspector.getSingleMethodNodeFromFile(TEST_FPATH + TEST_FILE);
+        //MethodComment mc = new MethodComment(mn.getDocComment());
 
         StructuredComment structuredComment = mn.getDocComment();
         assertEquals(2, structuredComment.getDescriptiveSentences().size());
@@ -26,6 +27,7 @@ public class MethodCommentTest {
     public void shouldGetTaggedSentences() {
 
         MethodNode mn = MethodInspector.getSingleMethodNodeFromFile(TEST_FPATH + TEST_FILE);
+        // MethodComment mc = new MethodComment(mn.getDocComment());
 
         StructuredComment structuredComment = mn.getDocComment();
         assertEquals(3, structuredComment.getTaggedSentences().size());
