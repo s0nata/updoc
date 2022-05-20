@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/493304392.svg)](https://zenodo.org/badge/latestdoi/493304392)
+
 # upDoc
 
 `upDoc` is an experimental comment inconsistency detection tool for Java source code. Given a file under change it checks whether the javadoc comments have been updated for the methods that were changed.
