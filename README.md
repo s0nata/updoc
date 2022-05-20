@@ -37,10 +37,11 @@ Please see below for the experiment replication instructions.
 `upDoc` is written in Java 11 and developed with `java-11-openjdk-amd64`.
 
 
-### Compiling the sources
+### Compiling and building the sources
 
-Execute: `$ mvn clean compile`
+To compile the sources execute: `$ mvn clean compile`
 
+To build a jar execute: `$ mvn package`
 
 ## Test and Run
 
@@ -65,11 +66,18 @@ Use maven to run the unit tests: `$ mvn test`
 
 ### Code-comment mapping demo
 
-To see how `upDoc` maps code to comments, you can run this command:
+To see how `upDoc` maps code to comments, you can run these commands:
+
+1) execution from the sources
 
 `mvn exec:java -Dexec.mainClass="upDoc" -Dexec.args="analysis:mapping src/test/resources/paper-example/ FromAdaptiveIsomorphismInspectorFactory.java 0.2"`
 
-It will run `upDoc` on a single method and report the similarities of the sentences of the javadoc comment to the method signature.
+2) executing the jar
+
+`java -jar upDoc-1.0.jar analysis:mapping ../src/test/resources/paper-example/ FromAdaptiveIsomorphismInspectorFactory.java 0.2
+`
+
+The demo will run `upDoc` on a single method and report the similarities of the sentences of the javadoc comment to the method signature.
 
 ### Replicate the experimental results from the publication
 
@@ -82,5 +90,3 @@ Execute `$ mvn -Dtest=PaperExampleStatTest test`
 Execute `$ mvn -Dtest=ICPC19StatsTest test -DuseWMD="true"`
 
 Please note that while in the paper we talk about 67 changes, in the outputs you will read a total of 40. It is because some changes were essentially equivalent, and it was not worth it to write a test for each duplicate (check the [google doc](https://docs.google.com/spreadsheets/d/1maRH6YY0OVuKSB2ACDhrz1-CQCS7sRHHoaZJDvLWi2Y/edit?usp=sharing) for the manual ICPC19 dataset analysis, where we list al lthe 67 changes in question)
-
-
