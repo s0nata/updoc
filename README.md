@@ -1,3 +1,4 @@
+[![Java Maven CI](https://github.com/s0nata/updoc/actions/workflows/maven.yml/badge.svg?branch=main)](https://github.com/s0nata/updoc/actions/workflows/maven.yml)
 [![DOI](https://zenodo.org/badge/493304392.svg)](https://zenodo.org/badge/latestdoi/493304392)
 
 # upDoc
