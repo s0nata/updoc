@@ -1,5 +1,6 @@
 [![Java Maven CI](https://github.com/s0nata/updoc/actions/workflows/maven.yml/badge.svg?branch=main)](https://github.com/s0nata/updoc/actions/workflows/maven.yml)
 [![Maintainability](https://api.codeclimate.com/v1/badges/1c882d09db991fc3ce25/maintainability)](https://codeclimate.com/github/s0nata/updoc/maintainability)
+[![CodeQL](https://github.com/s0nata/updoc/actions/workflows/codeql.yml/badge.svg?branch=main)](https://github.com/s0nata/updoc/actions/workflows/codeql.yml)
 [![DOI](https://zenodo.org/badge/493304392.svg)](https://zenodo.org/badge/latestdoi/493304392)
 
 # upDoc
