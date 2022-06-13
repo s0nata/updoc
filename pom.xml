@@ -33,26 +33,26 @@
         <dependency>
             <groupId>edu.stanford.nlp</groupId>
             <artifactId>stanford-corenlp</artifactId>
-            <version>3.9.2</version>
+            <version>4.4.0</version>
         </dependency>
         <dependency>
             <groupId>edu.stanford.nlp</groupId>
             <artifactId>stanford-corenlp</artifactId>
-            <version>3.9.2</version>
+            <version>4.4.0</version>
             <classifier>models</classifier>
         </dependency>
         <!-- added because of the models dependency above. -->
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>1.2.3</version>
+            <version>1.2.7</version>
         </dependency>
         <dependency>
             <!-- jsoup HTML parser library @ https://jsoup.org/ -->
             <!-- to clean up javadoc description before lemmatizing -->
             <groupId>org.jsoup</groupId>
             <artifactId>jsoup</artifactId>
-            <version>1.12.1</version>
+            <version>1.14.2</version>
         </dependency>
         <!-- for BoW representation of comments-->
         <dependency>
