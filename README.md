@@ -3,6 +3,7 @@
 [![CodeQL](https://github.com/s0nata/updoc/actions/workflows/codeql.yml/badge.svg?branch=main)](https://github.com/s0nata/updoc/actions/workflows/codeql.yml)
 ![Known Vulnerabilities](https://snyk.io/test/github/s0nata/updoc/badge.svg)
 [![DOI](https://zenodo.org/badge/493304392.svg)](https://zenodo.org/badge/latestdoi/493304392)
+[![HitCount](https://hits.dwyl.com/s0nata/updoc.svg?style=flat-square)](http://hits.dwyl.com/s0nata/updoc)
 
 # upDoc
 
