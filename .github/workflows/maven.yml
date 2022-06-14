@@ -31,3 +31,14 @@ jobs:
     
     - name: Build project with Maven
       run: mvn -B package --file pom.xml
+      
+    - name: Save Jacoco Artifact
+      uses: actions/upload-artifact@v2
+      with:
+          name: jacoco-report
+          path: target/jacoco
+      
+    - name: Upload Jacoco Report to CodeCov
+      uses: codecov/codecov-action@v3.1.0
+      with:
+          file: target/jacoco/jacoco.xml
