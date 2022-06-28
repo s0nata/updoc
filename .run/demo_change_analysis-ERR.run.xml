@@ -1,0 +1,10 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="demo:change:analysis-ERR" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="upDoc" />
+    <module name="upDoc" />
+    <option name="PROGRAM_PARAMETERS" value="demo:change:analysis src/main/resources/demo/ 0_AdaptiveIsomorphismInspectorFactory.java " />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

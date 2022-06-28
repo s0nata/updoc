@@ -1,0 +1,15 @@
+add,register
+export,dump
+fire,notify
+find,search
+finalize,clean
+parse,read
+handle,respond
+fill,draw
+clone,create
+init,initialize
+undo,restore
+quit,close
+paint,draw
+display,print
+reset,clear

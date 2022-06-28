@@ -9,7 +9,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>doc-code-analysis</groupId>
     <artifactId>upDoc</artifactId>
-    <version>1.0</version>
+    <version>1.1.0-alpha</version>
     <!-- Output to jar format -->
     <packaging>jar</packaging>
 
@@ -47,7 +47,7 @@
             <version>4.4.0</version>
             <classifier>models</classifier>
         </dependency>
-        <!-- added because of the models dependency above. -->
+        <!-- added because of the models dependency above -->
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
@@ -71,6 +71,22 @@
             <artifactId>commons-text</artifactId>
             <version>1.8</version>
         </dependency>
+        <!-- https://maven.pkg.github.com/gumtreediff/gumtree/* -->
+        <dependency>
+            <groupId>com.github.gumtreediff</groupId>
+            <artifactId>client</artifactId>
+            <version>3.0.0-beta2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.gumtreediff</groupId>
+            <artifactId>core</artifactId>
+            <version>3.0.0-beta2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.gumtreediff</groupId>
+            <artifactId>gen.javaparser</artifactId>
+            <version>3.0.0-beta2</version>
+        </dependency>
         <!-- https://mvnrepository.com/artifact/org.deeplearning4j/deeplearning4j-core -->
         <dependency>
             <groupId>org.deeplearning4j</groupId>
@@ -93,6 +109,13 @@
             <groupId>de.jungblut.glove</groupId>
             <artifactId>glove</artifactId>
             <version>0.3</version>
+        </dependency>
+        <!-- A library for tokenising Java identifier names  -->
+        <!-- https://mvnrepository.com/artifact/uk.org.facetus/intt -->
+        <dependency>
+            <groupId>uk.org.facetus</groupId>
+            <artifactId>intt</artifactId>
+            <version>0.8.11</version>
         </dependency>
     </dependencies>
 
@@ -161,7 +184,7 @@
             <!-- For downloading and unzipping WMD models -->
             <!-- NOTE: if for any reason these tasks fail, just follow the URL and
             download + unzip the models manually. The unzipped .txt model (it is a single file)
-            must be under src/main/resources -->
+            must be under src/main/resources-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
@@ -169,23 +192,19 @@
                     <execution>
                         <id>download-files</id>
                         <phase>prepare-package</phase>
-<!--                        <phase>compile</phase>-->
                         <goals>
                             <goal>run</goal>
                         </goals>
                         <configuration>
-                            <!-- see https://ant.apache.org/manual/Tasks/ for reference -->
                             <tasks>
                                 <!-- download file -->
                                 <get src="https://star-rep.inf.usi.ch/alberto/glove/raw/master/glove-models.zip"
-                                     dest="${project.build.directory}/glove-models.zip"
-                                     verbose="off"
-                                     usetimestamp="false"
-                                />
+                                     dest="${project.build.directory}/downloads/"
+                                     verbose="false"
+                                     usetimestamp="true"/>
                                 <!-- unzip file -->
-                                <unzip src="${project.build.directory}/glove-models.zip"
+                                <unzip src="${project.build.directory}/downloads/"
                                        dest="${project.basedir}/src/main/resources"/>
-                                <delete file="${project.build.directory}/glove-models.zip"/>
                             </tasks>
                         </configuration>
                     </execution>
@@ -195,7 +214,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.12.4</version>
                 <configuration>
                     <systemProperties>
                         <property>

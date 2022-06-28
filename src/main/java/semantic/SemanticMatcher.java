@@ -3,15 +3,8 @@ package semantic;
 import mapper.WordBag;
 import semantic.wmd4j.WordMovers;
 
-import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * Main component. Contains all the methods to compute the {@code SemantichMatch}es for a given
@@ -35,7 +28,7 @@ public class SemanticMatcher {
      * Threshold up to which a similarity distance is considered acceptable. Zero is perfect
      * similarity.
      */
-    private float wmdThreshold;
+    private final float wmdThreshold;
 
     public SemanticMatcher(boolean stopWordsRemoval, float distanceThreshold, float wmdThreshold) {
         this.wmdThreshold = wmdThreshold;
@@ -151,18 +144,19 @@ public class SemanticMatcher {
     /**
      * Compute semantic distance through Word Mover's Distance.
      */
-    public static double wmdMatch(WordBag one, WordBag two){
+    public static double wmdMatch(WordBag one, WordBag two) {
         try {
             WordMovers wm = WordMovers.Builder()
-                            .wordVectors(GloveModelWrapper.getInstance().getGloveTxtVectors())
-                            .build();
+                    .wordVectors(GloveModelWrapper.getInstance().getGloveTxtVectors())
+                    .build();
 
             double dist = 10;
             try {
                 dist = wm.distance(one.asSentence(), two.asSentence());
             } catch (Exception e) {
                 // do nothing
-            } return dist;
+            }
+            return dist;
         } catch (URISyntaxException e) {
             e.printStackTrace();
         }
@@ -197,7 +191,7 @@ public class SemanticMatcher {
      * @param methodName name of the method the tag belongs to
      * @param distances  the computed distance, for every possible code element candidate, from the
      *                   comment
-//     */
+    //     */
 //    private LinkedHashMap<CodeElement<?>, Double> retainMatches(
 //            List<String> commentWords, String methodName, Map<CodeElement<?>, Double> distances) {
 //        if (commentWords.size() > 8) {

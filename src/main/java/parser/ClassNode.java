@@ -4,6 +4,8 @@ import org.apache.commons.lang3.Range;
 
 /**
  * A base representation of a class AST node as a name and LOC range.
+ *
+ * @author stulova
  */
 public class ClassNode {
 
@@ -15,7 +17,6 @@ public class ClassNode {
 
         this.className = name;
         this.LOCs = Range.between(LOCbgn, LOCend);
-
     }
 
     public String getClassName() {

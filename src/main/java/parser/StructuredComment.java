@@ -13,11 +13,6 @@ import java.util.Optional;
 
 public class StructuredComment {
 
-    /**
-     * List of Javadoc Tags - backward compatibility:
-     * in the 'analysis:commit' scenario we only treat @param tags
-     */
-    private final ArrayList<JavadocBlockTag> jDocTags;
 
     /**
      * Sentence index (its ID in the comment)
@@ -29,30 +24,19 @@ public class StructuredComment {
      */
     private final JavadocComment javadocComment;
 
-
     public StructuredComment(Optional<JavadocComment> optJavadocComment) {
+
         if (optJavadocComment.isPresent()) {
             JavadocComment javadocComment = optJavadocComment.get();
-            // backward compatibility: in the 'analysis:commit' scenario we only treat @param tags
-            this.jDocTags = new ArrayList<>();
-            for (JavadocBlockTag tag : javadocComment.parse().getBlockTags()) {
-                if (tag.getName().isPresent()) {
-                    switch (tag.getType()) {
-                        case PARAM:
-                            jDocTags.add(tag);
-                            break;
-                        default:
-                            // ignore other possible sentences
-                            break;
-                    }
-                }
-            }
+
             this.javadocComment = javadocComment;
+
         } else {
             // Empty javadoc
+
             this.javadocComment = new JavadocComment();
-            this.jDocTags = new ArrayList<>();
         }
+
         this.commentSentenceNumber = 0;
     }
 
@@ -134,7 +118,7 @@ public class StructuredComment {
                 // 1) split that variable name (except for @return tag)
                 // 2) add any description if present
 
-                //FIXME what if multiple sentences per tag? Currently assuming one NL sentence in a tag
+                //Currently assuming one NL sentence in a tag
                 String tagSentence = "";
 
                 /* STEP 2.1: extract parameter/exception identifier (if applicable) */
@@ -144,14 +128,10 @@ public class StructuredComment {
                         Identifier id = new Identifier(tag.getName().get(), Identifier.KindOfID.VAR_NAME);
                         tagSentence += id.toString();
                     } else {
-                        //FIXME we should not need this condition branch (please test)
                         System.err.println("[MAPPING ERROR] missing identifier name in a sentence:");
                         System.err.println(tag);
                     }
                 }
-//                else {
-//                    tagSentence += "return "; //TODO: may lead to doubling number of 'return' lemmas
-//                }
 
                 /* STEP 2.2: extract the NL sentence part */
 
@@ -177,7 +157,5 @@ public class StructuredComment {
         return javadocComment;
     }
 
-    public ArrayList<JavadocBlockTag> getJDocTags() {
-        return this.jDocTags;
-    }
+
 }

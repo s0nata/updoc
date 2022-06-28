@@ -5,10 +5,10 @@ package semantic.wmd4j.emd;
  */
 
 class Edge {
-    
-    int  to;
+
+    int to;
     long cost;
-    
+
     Edge(int to, long cost) {
         this.to = to;
         this.cost = cost;
@@ -16,10 +16,10 @@ class Edge {
 }
 
 class Edge0 {
-    int  to;
+    int to;
     long cost;
     long flow;
-    
+
     Edge0(int to, long cost, long flow) {
         this.to = to;
         this.cost = cost;
@@ -28,10 +28,10 @@ class Edge0 {
 }
 
 class Edge1 {
-    
-    int  to;
+
+    int to;
     long reducedCost;
-    
+
     Edge1(int to, long reducedCost) {
         this.to = to;
         this.reducedCost = reducedCost;
@@ -39,11 +39,11 @@ class Edge1 {
 }
 
 class Edge2 {
-    
-    int  to;
+
+    int to;
     long reducedCost;
     long residualCapacity;
-    
+
     Edge2(int to, long reducedCost, long residualCapacity) {
         this.to = to;
         this.reducedCost = reducedCost;
@@ -52,10 +52,10 @@ class Edge2 {
 }
 
 class Edge3 {
-    
-    int  to;
+
+    int to;
     long dist;
-    
+
     public Edge3() {
         to = 0;
         dist = 0;

@@ -11,87 +11,89 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-/** Created by arianna on 31/07/17. */
+/**
+ * Created by arianna on 31/07/17.
+ */
 public class GloveModelWrapper {
 
-  private static GloveModelWrapper instance = null;
+    private static GloveModelWrapper instance = null;
 
-  private static WordVectors gloveTxtVectors = null;
+    private static WordVectors gloveTxtVectors = null;
 
-  protected GloveModelWrapper() {
-    // Exists only to defeat instantiation.
-  }
+    protected GloveModelWrapper() {
+        // Exists only to defeat instantiation.
+    }
 
-  public static GloveModelWrapper getInstance() throws URISyntaxException {
-    if (instance == null) {
-      instance = new GloveModelWrapper();
-      try {
-        gloveTxtVectors = setUpGloveTxtVectors();
+    public static GloveModelWrapper getInstance() throws URISyntaxException {
+        if (instance == null) {
+            instance = new GloveModelWrapper();
+            try {
+                gloveTxtVectors = setUpGloveTxtVectors();
 //        gloveTxtVectors = setUpBinVectors();
-      } catch (Exception e) {
-        e.printStackTrace();
-      }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return instance;
     }
-    return instance;
-  }
 
-  private static WordVectors setUpGloveTxtVectors() throws Exception {
-    String gloveTxtFolder = "glove-txt";
-    String gloveTxtFile = "glove.6B.300d.txt";
+    private static WordVectors setUpGloveTxtVectors() throws Exception {
+        String gloveTxtFolder = "glove-txt";
+        String gloveTxtFile = "glove.6B.300d.txt";
 
-    // Copy GloVe models in Toradocu jar to glove-txt folder and use them.
-    String filePath = "/" + gloveTxtFile;
-    InputStream gloveInputStream = GloveModelWrapper.class.getResourceAsStream(filePath);
-    Path destinationFile = Paths.get(gloveTxtFolder, gloveTxtFile);
+        // Copy GloVe models in Toradocu jar to glove-txt folder and use them.
+        String filePath = "/" + gloveTxtFile;
+        InputStream gloveInputStream = GloveModelWrapper.class.getResourceAsStream(filePath);
+        Path destinationFile = Paths.get(gloveTxtFolder, gloveTxtFile);
 
-    Path folderPath = Paths.get(gloveTxtFolder);
-    if (!Files.exists(folderPath)) {
-      Files.createDirectory(folderPath);
+        Path folderPath = Paths.get(gloveTxtFolder);
+        if (!Files.exists(folderPath)) {
+            Files.createDirectory(folderPath);
+        }
+        if (Files.list(folderPath).count() == 0) {
+            Files.copy(gloveInputStream, destinationFile);
+        }
+        WordVectors gloveVectors = null;
+        try {
+            File gloveFinalFile = destinationFile.toFile();
+            gloveVectors = WordVectorSerializer.loadStaticModel(gloveFinalFile);
+            gloveFinalFile.deleteOnExit();
+            folderPath.toFile().deleteOnExit();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return gloveVectors;
     }
-    if (Files.list(folderPath).count() == 0) {
-      Files.copy(gloveInputStream, destinationFile);
-    }
-    WordVectors gloveVectors = null;
-    try {
-      File gloveFinalFile = destinationFile.toFile();
-      gloveVectors = WordVectorSerializer.loadStaticModel(gloveFinalFile);
-      gloveFinalFile.deleteOnExit();
-      folderPath.toFile().deleteOnExit();
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-    return gloveVectors;
-  }
 
-  private static WordVectors setUpBinVectors() throws Exception {
-    String modelFolder = "google-bin";
-    String modelFile = "GoogleNews-vectors-negative300.bin";
+    private static WordVectors setUpBinVectors() throws Exception {
+        String modelFolder = "google-bin";
+        String modelFile = "GoogleNews-vectors-negative300.bin";
 
-    // Copy GloVe models in Toradocu jar to glove-txt folder and use them.
-    String filePath = "/" + modelFile;
-    InputStream gloveInputStream = GloveModelWrapper.class.getResourceAsStream(filePath);
-    Path destinationFile = Paths.get(modelFolder, modelFile);
+        // Copy GloVe models in Toradocu jar to glove-txt folder and use them.
+        String filePath = "/" + modelFile;
+        InputStream gloveInputStream = GloveModelWrapper.class.getResourceAsStream(filePath);
+        Path destinationFile = Paths.get(modelFolder, modelFile);
 
-    Path folderPath = Paths.get(modelFolder);
-    if (!Files.exists(folderPath)) {
-      Files.createDirectory(folderPath);
+        Path folderPath = Paths.get(modelFolder);
+        if (!Files.exists(folderPath)) {
+            Files.createDirectory(folderPath);
+        }
+        if (Files.list(folderPath).count() == 0) {
+            Files.copy(gloveInputStream, destinationFile);
+        }
+        Word2Vec vec = null;
+        try {
+            File modelFinalFile = destinationFile.toFile();
+            vec = WordVectorSerializer.readWord2VecModel(modelFinalFile);
+            modelFinalFile.deleteOnExit();
+            folderPath.toFile().deleteOnExit();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return vec;
     }
-    if (Files.list(folderPath).count() == 0) {
-      Files.copy(gloveInputStream, destinationFile);
-    }
-    Word2Vec vec  = null;
-    try {
-      File modelFinalFile = destinationFile.toFile();
-      vec = WordVectorSerializer.readWord2VecModel(modelFinalFile);
-      modelFinalFile.deleteOnExit();
-      folderPath.toFile().deleteOnExit();
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-    return vec;
-  }
 
-  public WordVectors getGloveTxtVectors() {
-    return gloveTxtVectors;
-  }
+    public WordVectors getGloveTxtVectors() {
+        return gloveTxtVectors;
+    }
 }

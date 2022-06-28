@@ -1,6 +1,8 @@
 package mapper;
 
-import org.tartarus.snowball.ext.EnglishStemmer;
+import uk.ac.open.crc.intt.IdentifierNameTokeniser;
+import uk.ac.open.crc.intt.IdentifierNameTokeniserFactory;
+import util.TextProcessor;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -10,6 +12,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -17,12 +21,18 @@ import java.util.stream.Collectors;
  */
 public class Identifier {
 
-    // FIXME Ari - what is the exact difference between Type_Name and Class_Name?
     public enum KindOfID {
-        VAR_NAME, METHOD_NAME, CLASS_NAME, TYPE_NAME
+        VAR_NAME,
+        METHOD_NAME,
+        CLASS_NAME,
+        TYPE_NAME,
+        GENERIC
     }
 
-  private String fullName;
+    // Separator between tokens when splitting (to avoid merging them in a unique word).
+    //  final String SEPARATOR = " ";
+
+    private final String fullName;
 
     private final KindOfID kindOfID;
 
@@ -35,139 +45,183 @@ public class Identifier {
         kindOfID = kind;
 
         splitName = this.split();
-
     }
 
     /**
      * Split an identifier on case change ("camelCase" split), numbers or special characters legal in
      * Java identifier names and get a lemma of each constituent.
      *
-     * <p>
-     * Regex splits: (a) either between a character that is not a line begin or capital letter, and a
-     * capital letter (b) or between a character that is not a line begin, and a capital followed by a
-     * non-capital.
+     * <p>Regex splits: (a) either between a character that is not a line begin or capital letter, and
+     * a capital letter (b) or between a character that is not a line begin, and a capital followed by
+     * a non-capital.
      *
-     * <p>
-     * After the splitting a lemma of each word is extracted and formatted to lowercase.
+     * <p>After the splitting a lemma of each word is extracted and formatted to lowercase.
      *
      * @return Returns a list of strings that constitute the original identifier name.
      */
     public ArrayList<String> split() {
 
-        ArrayList<String> nameParts = new ArrayList<String>();
+        String fullNameCopy = fullName;
 
-        // String patternTORADOCU = "(?<!(^|[A-Z]))(?=[A-Z])|(?<!^)(?=[A-Z][a-z])";
+        ArrayList<String> nameParts = new ArrayList<String>(); // return this
 
-        // match positions between letters of different case (camelCase)
-        String patternLowerToUpper = "(?<!(^|[A-Z]))(?=[A-Z])";
-        // match on Java-legal special characters and remove them
+        // STEP 0: in the identifier expand numbers to words
 
-        String patternOmitSpecial = "[#_$\\-/'\"<>?!()]";
         // match on numbers to solve them
-        String patternNumbers = "((?<=[0-9]+)|(?=[0-9]+))";
-        if (fullName.matches(".*[0-9]+")) {
-            fullName = manageCardinalNumber(fullName, patternNumbers);
+        String patternNumbers = "([0-9]+)";
+        if (fullNameCopy.matches(".*[0-9]+.*")) {
+            fullNameCopy = fromCardinalToOrdinal(fullNameCopy, patternNumbers);
         }
 
-        // identifier splitting, order matters: matching is greedy
-        // empty words appear when a character is removed (special one or number)
-        String pattern = patternOmitSpecial + "|" + patternLowerToUpper;
+        // STEP 1: split the identifier, either with regex or with INTT
 
+        // List<String> matches = splitWithRegex(fullNameCopy);
+        List<String> matches = splitWithINTT(fullNameCopy);
+
+
+        // STEP 2: filter out stop words, expand abbreviations
+
+        // extract stop words from resource file and store them in a list
         String stopwordsContent = "";
-        String abbrevContent = "";
-
         try (InputStream inputStream = getClass().getResourceAsStream("/stopwords.txt");
              BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
-            stopwordsContent = reader.lines()
-                    .collect(Collectors.joining(System.lineSeparator()));
+            stopwordsContent = reader.lines().collect(Collectors.joining(System.lineSeparator()));
         } catch (IOException e) {
             e.printStackTrace();
         }
+        List<String> stopwords = Arrays.asList(stopwordsContent.split("\n"));
 
+        // extract our custom abbreviation expansions from resource file and store them in a list
+        String abbrevContent = "";
         try (InputStream inputStream = getClass().getResourceAsStream("/abbreviations.txt");
              BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
-            abbrevContent = reader.lines()
-                    .collect(Collectors.joining(System.lineSeparator()));
+            abbrevContent = reader.lines().collect(Collectors.joining(System.lineSeparator()));
         } catch (IOException e) {
             e.printStackTrace();
         }
-        // Check whether word belongs to stopwords list: if so it won't be part of BoW
-        List<String> stopwords = Arrays.asList(stopwordsContent.split("\n"));
         String[] abbrevs = abbrevContent.split("\n");
-        for (String word : fullName.split(pattern)) {
+
+        // Check whether word belongs to stopwords list: if so it won't be part of BoW
+        for (String word : matches) {
             if (!word.isEmpty() && !stopwords.contains(word)) {
                 // Word is not part of stopwords. Is it an abbreviation that must be expanded?
                 word = word.toLowerCase();
+                boolean replacedAbbr = false;
                 for (String abbr : abbrevs) {
-                    //FIXME add init and enum in abbreviations.
                     String[] pair = abbr.split(":");
                     if (word.equals(pair[0])) {
                         word = pair[1];
+                        replacedAbbr = true;
                         break;
                     }
                 }
 
-                // Here we get lemmas and stems.
-                // TODO Ari: Note that stemming or lemmatizating words
-                // TODO heavily affects cosine sim (obviously), while it is basically irrelevant for
-                // TODO semantic measures like WMD.
-                word = getStemmedLemma(word);
+                // if no abbreviation from abbreviations.txt was used
+                if (!replacedAbbr) {
+                    word = AbbreviationExpander.expandAbbreviationIdentifier(word);
+                }
 
-                // TODO check if lowercase is necessary, stemmer should already do this
-                nameParts.add(word.toLowerCase());
+                // Here we get lemmas and stems.
+                // Note that stemming or lemmatizating words
+                // heavily affects cosine sim (obviously), while it is basically irrelevant for
+                // semantic measures like WMD.
+                word = TextProcessor.getStemmedLemma(word);
+
+                // Trimming to avoid extra spaces before/after tokens.
+                nameParts.add(word.toLowerCase().trim());
             }
         }
 
-        return nameParts;
+        return nameParts.stream()
+                .filter(part -> !part.isBlank())
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 
-    private String manageCardinalNumber(String fullName, String patternNumbers) {
-        for (String word : fullName.split(patternNumbers)) {
-            switch (word) {
-                case "1":
-                    fullName = fullName.replace("1", "First");
+    private String fromCardinalToOrdinal(String fullName, String patternNumbers) {
+        Pattern pattern = Pattern.compile(patternNumbers);
+        Matcher matcher = pattern.matcher(fullName);
+        String numbersContent = "";
+        try (InputStream inputStream = getClass().getResourceAsStream("/numbers.txt");
+             BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+            numbersContent = reader.lines().collect(Collectors.joining(System.lineSeparator()));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        // Check whether word belongs to stopwords list: if so it won't be part of BoW
+        String[] ordinalNumbers = numbersContent.split("\n");
+
+        while (matcher.find()) {
+            String number = matcher.group(1);
+            for (String abbr : ordinalNumbers) {
+                String[] pair = abbr.split(":");
+                if (number.equals(pair[0])) {
+                    // TODO to be verified that replaceFirst is not too naive (for multiple occurrences of
+                    // same number).
+                    fullName = fullName.replaceFirst(pair[0], pair[1]);
                     break;
-                case "2":
-                    fullName = fullName.replace("2", "Second");
-                    break;
+                }
             }
+            //    for(String word: fullName.split(patternNumbers)){
+            //      switch (word){
+            //        case "1": fullName = fullName.replace("1", "First");
+            //        break;
+            //        case "2": fullName = fullName.replace("2", "Second");
+            //        break;
+            //      }
         }
 
         return fullName;
-
     }
 
-    /**
-     * Given a word text, lemmatize it and then stem it.
-     *
-     * @param word to transform into lemma and then stem
-     * @return the result of lemmatization+stemmating
-     */
-    private String getStemmedLemma(String word) {
-//    String lemma = new Sentence(word).lemma(0);
+    private List<String> splitWithRegex(String identifierName) {
 
+        // String patternTORADOCU = "(?<!(^|[A-Z]))(?=[A-Z])|(?<!^)(?=[A-Z][a-z])";
+        // match positions between letters of different case (camelCase)
+        String camelCasePattern = "(?<!(^|[A-Z]))(?=[A-Z])|(?<!^)(?=[A-Z][a-z])";
+        // match on Java-legal special characters and remove them
+        String patternOmitSpecial = "[#_$\\-/'\"<>?!()]";
 
-        // TODO Ari -- this used to be PorterStemmer, but it seems to have some bugs:
-        // TODO For example, it would stem "one" as "on".
-        // TODO For a reference to how a word should be stem, you can try at:
-        // TODO https://text-processing.com/demo/stem/
-        // TODO
-        // TODO For now I switch to EnglishStemmer because it does not present the same bug.
-        EnglishStemmer stemmer = new EnglishStemmer();
-        stemmer.setCurrent(word);
-        stemmer.stem();
-        word = stemmer.getCurrent();
-        return word;
+        Pattern p = Pattern.compile("((?<![A-Z])|^)[A-Z]{3}(?![A-Z])|(?<![A-Z])[A-Z]{2}[a-z]+");
+        Matcher m = p.matcher(identifierName);
+
+        List<String> matches = new ArrayList<String>();
+
+        while (m.find()) {
+            String stringMatch = m.group();
+            matches.add(stringMatch);
+            identifierName = identifierName.replace(stringMatch, "#");
+        }
+
+        // identifier splitting, order matters: matching is greedy
+
+        // empty words appear when a character is removed (special one or number)
+        String finalPattern = patternOmitSpecial + "|" + camelCasePattern;
+
+        if (identifierName.length() > 0) {
+            matches.addAll(Arrays.asList(identifierName.split(finalPattern)));
+        }
+
+        return matches;
     }
+
+    private List<String> splitWithINTT(String identifierName) {
+
+        IdentifierNameTokeniserFactory idFactory = new IdentifierNameTokeniserFactory();
+        IdentifierNameTokeniser idTokenizer = idFactory.create();
+
+        return idTokenizer.tokenise(identifierName);
+
+    }
+    /**/
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Identifier)) return false;
         Identifier that = (Identifier) o;
-        return Objects.equals(fullName, that.fullName) &&
-                kindOfID == that.kindOfID &&
-                Objects.equals(splitName, that.splitName);
+        return Objects.equals(fullName, that.fullName)
+                && kindOfID == that.kindOfID
+                && Objects.equals(splitName, that.splitName);
     }
 
     @Override
@@ -177,18 +231,18 @@ public class Identifier {
 
     @Override
     public String toString() {
-
         // can either return the original identifier name or its split into constituents, doing the
         // latter
-        // FIXME: remove extra spaces before and after the splits --NS
-        String identfierString = " ";
+        StringBuilder identifierString = new StringBuilder(" ");
 
         for (String constituent : this.splitName) {
-            identfierString += constituent + " ";
+            identifierString.append(constituent).append(" ");
         }
 
-        return identfierString;
+        return identifierString.toString();
     }
 
-
+    public List<String> getSplitName() {
+        return this.splitName;
+    }
 }

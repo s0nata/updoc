@@ -4,47 +4,44 @@ import edu.stanford.nlp.simple.Sentence;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
- * This class represents a sentence in a code comment (which may be composed of multiple
- * sentences). A sentence is identified by its own id w.r.t the whole comment: the first
- * sentence of the comment has ID==0, the 2nd sentence has ID==1, and so on.
- * For each sentence, we also know what part of the Javadoc it belonged to (@param, @return, etc.).
- * All this information will be used by MapBuilder.
+ * This class represents a sentence in a code comment (which may be composed of multiple sentences).
+ * A sentence is identified by its own id w.r.t the whole comment: the first sentence of the comment
+ * has ID==0, the 2nd sentence has ID==1, and so on. For each sentence, we also know what part of
+ * the Javadoc it belonged to (@param, @return, etc.). All this information will be used by
+ * MapBuilder.
  *
- * <p>
- * This class takes care of performing all the NLP operations needed on sentences
- * from Javadoc comments (represented as strings), such as: removing HTML markup, filtering stop
- * words, lemmatization etc.
+ * <p>This class takes care of performing all the NLP operations needed on sentences from Javadoc
+ * comments (represented as strings), such as: removing HTML markup, filtering stop words,
+ * lemmatization etc.
  *
- * <p>
- * Functionality can be used both for strings containing multiple and single sentences.
+ * <p>Functionality can be used both for strings containing multiple and single sentences.
  *
- * <p>
- * Stanford CORE NLP functionality is used.
+ * <p>Stanford CORE NLP functionality is used.
  */
 public class CommentSentence {
 
     public enum CommentPart {
-        DESC, PARAM, EXCEP, RETURN, OTHER
+        DESC,
+        PARAM,
+        EXCEP,
+        RETURN,
+        INLINE,
+        OTHER
     }
 
     private final Integer id;
 
     private final CommentPart part;
 
-    //TODO private ArrayList<Identifier> containedIdentifiers;
-
     private final String originalString;
 
     private boolean hasSentenceStructure;
 
-    // FIXME make Optional?
     private Sentence sentenceStructure; // CoreNLP representation
 
-    // TODO private Range<Integer> LOCs;
-
-    // TODO: this should already get all project identifiers as a list for {@code containedIdentifiers}
     public CommentSentence(int id, CommentPart part, String originalText) {
 
         this.id = id;
@@ -60,9 +57,7 @@ public class CommentSentence {
         } catch (IllegalStateException ilsException) {
 
             System.err.println(ilsException.getMessage());
-
         }
-
     }
 
     public Integer getId() {
@@ -70,23 +65,23 @@ public class CommentSentence {
         return this.id;
     }
 
-
     public CommentPart getPart() {
         return this.part;
     }
 
-
     /**
-     * Note that CamelCase IDs get splitted in comment just as they are for AST nodes.
+     * Note that CamelCase IDs get split in comment just as they are for AST nodes.
      */
     public WordBag toBagOfWords() {
 
         WordBag sentenceBoW = new WordBag();
 
         if (this.hasSentenceStructure) {
-            for (String word : this.sentenceStructure.words()) {
+            for (String word :
+                    this.sentenceStructure.words().stream()
+                            .filter(word -> !word.equals("``"))
+                            .collect(Collectors.toList())) {
                 // treat every lemma as an identifier
-                // TODO: this above is hacky
                 Identifier id = new Identifier(word, Identifier.KindOfID.VAR_NAME);
                 for (String lemmaFromId : id.split()) {
                     sentenceBoW.add(lemmaFromId.toLowerCase());
@@ -94,21 +89,14 @@ public class CommentSentence {
             }
             removePunctuation(sentenceBoW);
 
-            // FIXME removing stopwords should be made by id.split() already,
-            // FIXME check whether this call is redundant
             removeStopWords(sentenceBoW);
         }
 
         return sentenceBoW;
-
     }
 
     private void removePunctuation(WordBag stringBag) {
 
-        // FIXME when we feed a comment sentence to the Stanford Parser's Sentence
-        // FIXME representation, some symbols get converted into something else:
-        // FIXME it is the case of opening/closing parenthes, that become "lrb" and "rrb".
-        // FIXME Check whether other symbols are involved, and, possibly, address them earlier
         List<String> punctuationSymbols = Arrays.asList(".", ",", "lrb", "rrb");
 
         for (String symbol : punctuationSymbols) {
@@ -116,7 +104,6 @@ public class CommentSentence {
                 stringBag.remove(symbol);
             }
         }
-
     }
 
     private void removeStopWords(WordBag stringBag) {
@@ -138,5 +125,4 @@ public class CommentSentence {
 
         return this.originalString;
     }
-
 }

@@ -3,9 +3,8 @@ package mapper;
 import org.apache.commons.collections4.bag.HashBag;
 import org.apache.commons.text.similarity.CosineSimilarity;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * This class encapsulates the implementation of a bag of words structure as a HashBag<String>.
@@ -22,7 +21,6 @@ public class WordBag {
         lemmas = new HashBag<String>();
     }
 
-
     /**
      * Creates a non-empty bag of words from a list.
      *
@@ -34,7 +32,6 @@ public class WordBag {
         lemmas.addAll(words);
     }
 
-
     /**
      * @see org.apache.commons.collections4.bag.HashBag#add(Object)
      */
@@ -42,7 +39,6 @@ public class WordBag {
 
         this.lemmas.add(str);
     }
-
 
     /**
      * @see org.apache.commons.collections4.bag.HashBag#addAll(Collection)
@@ -52,7 +48,6 @@ public class WordBag {
         this.lemmas.addAll(coll);
     }
 
-
     /**
      * @see org.apache.commons.collections4.bag.HashBag#contains(Object)
      */
@@ -61,7 +56,6 @@ public class WordBag {
         return this.lemmas.contains(obj);
     }
 
-
     /**
      * @see org.apache.commons.collections4.bag.HashBag#size()
      */
@@ -69,14 +63,12 @@ public class WordBag {
         return this.lemmas.size();
     }
 
-
     /**
      * @see org.apache.commons.collections4.bag.HashBag#getCount(Object)
      */
     public int getCount(Object obj) {
         return this.lemmas.getCount(obj);
     }
-
 
     /**
      * @see org.apache.commons.collections4.bag.HashBag#remove(Object)
@@ -100,11 +92,9 @@ public class WordBag {
             if (this.lemmas.contains(str)) {
                 commonLemmasNumber += 1;
             }
-
         }
 
         return commonLemmasNumber / (this.size() + other.size() - commonLemmasNumber);
-
     }
 
     /**
@@ -117,6 +107,7 @@ public class WordBag {
 
         CosineSimilarity dist = new CosineSimilarity();
 
+        // TODO could be written more elegantly with lambdas
         Map<CharSequence, Integer> leftVector = new HashMap<>();
         for (String tLemma : this.lemmas) {
             leftVector.put(tLemma, this.lemmas.getCount(tLemma));
@@ -168,7 +159,6 @@ public class WordBag {
         WordBag other = (WordBag) obj;
 
         return this.lemmas.equals(other);
-
     }
 
     /**
@@ -179,4 +169,7 @@ public class WordBag {
         return this.lemmas.toString();
     }
 
+    public List<String> toList() {
+        return Arrays.stream(this.lemmas.toArray()).map(x -> x.toString()).collect(Collectors.toList());
+    }
 }

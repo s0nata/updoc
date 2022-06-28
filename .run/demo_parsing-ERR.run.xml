@@ -1,0 +1,10 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="demo:parsing-ERR" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="upDoc" />
+    <module name="upDoc" />
+    <option name="PROGRAM_PARAMETERS" value="demo:parsing src/main/resources/demo/ " />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

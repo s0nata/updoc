@@ -12,7 +12,7 @@ import static org.junit.Assert.assertEquals;
 
 public class ASTNodeTest {
 
-    static final String TEST_FPATH = "src/test/resources/paper-example/";
+    static final String TEST_FPATH = "src/test/resources/mapping/";
     static final String TEST_FNAME = "AdaptiveIsomorphismInspectorFactory_c.java";
 
     @Test
@@ -20,7 +20,7 @@ public class ASTNodeTest {
 
         MethodNode testMethod = MethodInspector.getSingleMethodNodeFromFile(TEST_FPATH + TEST_FNAME);
 
-        ASTNode testNode = new ASTNode(testMethod.getMethodSignature(), 0);
+        ASTNode testNode = new ASTNode(testMethod.getMethodStructuredSignature(), 0);
 
         LinkedHashSet<Identifier> expectedIdentifiers = new LinkedHashSet<Identifier>();
         expectedIdentifiers.add(new Identifier("assertUnsupportedGraphTypes", KindOfID.METHOD_NAME));
@@ -40,7 +40,7 @@ public class ASTNodeTest {
 
         MethodNode testMethod = MethodInspector.getSingleMethodNodeFromFile(TEST_FPATH + TEST_FNAME);
 
-        ASTNode testNode = new ASTNode(testMethod.getMethodSignature(), 0);
+        ASTNode testNode = new ASTNode(testMethod.getMethodStructuredSignature(), 0);
 
         WordBag expectedBoW =
                 new WordBag(List.of(
