@@ -3,12 +3,13 @@
 
 [![SWUbanner](https://raw.githubusercontent.com/vshymanskyy/StandWithUkraine/main/banner2-direct.svg)](https://github.com/vshymanskyy/StandWithUkraine/blob/main/docs/README.md)
 
+<!--
 [![Java Maven CI](https://github.com/s0nata/updoc/actions/workflows/maven.yml/badge.svg?branch=main)](https://github.com/s0nata/updoc/actions/workflows/maven.yml)
 [![CodeQL](https://github.com/s0nata/updoc/actions/workflows/codeql.yml/badge.svg?branch=main)](https://github.com/s0nata/updoc/actions/workflows/codeql.yml)
 [![Maintainability](https://api.codeclimate.com/v1/badges/1c882d09db991fc3ce25/maintainability)](https://codeclimate.com/github/s0nata/updoc/maintainability)
 [![codecov](https://codecov.io/gh/s0nata/updoc/branch/main/graph/badge.svg?token=D8QZL6JJUB)](https://codecov.io/gh/s0nata/updoc)
 ![Known Vulnerabilities](https://snyk.io/test/github/s0nata/updoc/badge.svg)
-
+-->
 
 
 # upDoc
